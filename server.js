@@ -140,7 +140,105 @@ app.post("/edit-video", upload.single("image"), async (req, res) => {
 
   command1.run();
 });
+// app.post("/edit-video", upload.single("image"), async (req, res) => {
+//   const videoPath = req.body.video; // Hardcoded video path
+//   const imagePath = req.file.path; // Image path from uploaded file
+//   const text = req.body.name; // Name from the request body
+//   console.log("Dr Name", text);
+//   // Hardcoded text and positions
+//   const textX = 400;
+//   const textY = 250;
+//   const textStart = 0;
+//   const textDuration = 2.5;
 
+//   // Hardcoded image positions and timings
+//   const imageX = 400;
+//   const imageY = 430;
+//   const imageStart = 0;
+//   const imageDuration = 2.5;
+
+//   const intermediatePath = `output/${Date.now()}_intermediate.mp4`;
+//   const outputPath = `output/${Date.now()}_output.mp4`;
+
+//   // Ensure the output directory exists
+//   const outputDir = path.dirname(outputPath);
+//   if (!fs.existsSync(outputDir)) {
+//     fs.mkdirSync(outputDir, { recursive: true });
+//   }
+
+//   // Step 1: Add image overlay
+//   let command1 = ffmpeg()
+//     .input(videoPath) // Specify video input
+//     .input(imagePath) // Specify image input
+//     .complexFilter([
+//       {
+//         filter: "overlay",
+//         options: {
+//           x: imageX,
+//           y: imageY,
+//           enable: `between(t,${imageStart},${imageDuration})`,
+//         },
+//       },
+//     ])
+//     .output(intermediatePath)
+//     .on("end", () => {
+//       console.log("Step 1: Image overlay added");
+
+//       // Step 2: Add text overlay to the intermediate video
+//       let command2 = ffmpeg()
+//         .input(intermediatePath) // Specify intermediate video input
+//         .complexFilter([
+//           {
+//             filter: "drawtext",
+//             options: {
+//               text: text,
+//               x: textX,
+//               y: textY,
+//               fontsize: 50,
+//               fontcolor: "black",
+//               fontfile: "fonts/FreeSerif.ttf",
+//               boxcolor: "black@0.5", // Add a semi-transparent black background
+//               boxborderw: 0, // No border
+//               enable: `between(t,${textStart},${textDuration})`,
+//             },
+//           },
+//         ])
+//         .output(outputPath)
+//         .on("end", async () => {
+//           console.log("Step 2: Text overlay added");
+
+//           // Upload the output video to S3
+//           const fileBuffer = fs.readFileSync(outputPath);
+//           const s3Key = `videos/${Date.now()}_output.mp4`;
+//           try {
+//             const url = await UploadFile(s3Key, {
+//               buffer: fileBuffer,
+//               mimetype: "video/mp4",
+//             });
+//             // Clean up local files
+//             fs.unlinkSync(intermediatePath);
+//             fs.unlinkSync(outputPath);
+//             fs.unlinkSync(imagePath); // Clean up uploaded image
+//             res.json({ url }); // Send the pre-signed URL to the frontend
+//           } catch (err) {
+//             console.error("Error uploading to S3:", err);
+//             res.status(500).send("Error processing video");
+//           }
+//         })
+//         .on("error", (err) => {
+//           console.error("Error during text overlay processing:", err);
+//           res.status(500).send("Error processing video");
+//         });
+
+//       command2.run();
+//     })
+//     .on("error", (err) => {
+//       console.error("Error during image overlay processing:", err);
+//       res.status(500).send("Error processing video");
+//     });
+
+//   command1.run();
+// });
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
