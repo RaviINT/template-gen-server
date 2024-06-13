@@ -4,6 +4,7 @@ const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
 const ffmpegPath = require("ffmpeg-static");
 const ffprobeStatic = require("ffprobe-static");
+const { exec } = require("child_process");
 
 const { s3, UploadFile, Image_Link } = require("../utils/s3-config");
 
@@ -11,15 +12,16 @@ const { s3, UploadFile, Image_Link } = require("../utils/s3-config");
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobeStatic.path);
 
-
 module.exports = {
   editVideo: async (req, res) => {
+    const videoId = Math.floor(10000 + Math.random() * 90000);
+
     const imagePath = req.file.path;
     const videoUrl = req.body.videoUrl;
 
-    const videoPath = `temp/${Date.now()}_video.mp4`;
-    const videoPath2 = `temp/${Date.now()}_video2.mp4`;
-    const outputPath = `output/${Date.now()}_output.mp4`;
+    const videoPath = `temp/${videoId}_video.mp4`;
+    const videoPath2 = `temp/${videoId}_video2.mp4`;
+    const outputPath = `output/${videoId}_output.mp4`;
 
     // Ensure the output directory exists
     const outputDir = path.dirname(outputPath);
@@ -52,7 +54,7 @@ module.exports = {
               console.log("Videos merged successfully");
 
               const fileBuffer = fs.readFileSync(outputPath);
-              const s3Key = `videos/${Date.now()}_output.mp4`;
+              const s3Key = `videos/${videoId}_output.mp4`;
               try {
                 const url = await UploadFile(s3Key, {
                   buffer: fileBuffer,
@@ -106,8 +108,8 @@ module.exports = {
     const imageStart = 0;
     const imageDuration = 2.5;
 
-    const intermediatePath = `output/${Date.now()}_intermediate.mp4`;
-    const outputPath = `output/${Date.now()}_output.mp4`;
+    const intermediatePath = `output/${videoId}_intermediate.mp4`;
+    const outputPath = `output/${videoId}_output.mp4`;
 
     // Ensure the output directory exists
     const outputDir = path.dirname(outputPath);
@@ -158,7 +160,7 @@ module.exports = {
 
             // Upload the output video to S3
             const fileBuffer = fs.readFileSync(outputPath);
-            const s3Key = `videos/${Date.now()}_output.mp4`;
+            const s3Key = `videos/${videoId}_output.mp4`;
             try {
               const url = await UploadFile(s3Key, {
                 buffer: fileBuffer,

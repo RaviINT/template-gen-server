@@ -1,4 +1,5 @@
 const { default: axios } = require("axios");
+const fs = require("fs");
 
 async function downloadFile(url, outputPath) {
   const writer = fs.createWriteStream(outputPath);
