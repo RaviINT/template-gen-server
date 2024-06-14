@@ -54,11 +54,17 @@ module.exports = {
               console.log("Videos merged successfully");
 
               const fileBuffer = fs.readFileSync(outputPath);
-              const s3Key = `videos/${videoId}_output.mp4`;
+              const imageBuffer = fs.readFileSync(imagePath);
+              const s3VideoKey = `videos/${videoId}_output.mp4`;
+              const s3ImageKey = `images/${videoId}_output.png`;
               try {
-                const url = await UploadFile(s3Key, {
+                const videoUrl = await UploadFile(s3VideoKey, {
                   buffer: fileBuffer,
                   mimetype: "video/mp4",
+                });
+                const imageUrl = await UploadFile(s3ImageKey, {
+                  buffer: imageBuffer,
+                  mimetype: "image/png",
                 });
                 // Clean up local files
 
@@ -67,7 +73,7 @@ module.exports = {
                 fs.unlinkSync(outputPath);
                 fs.unlinkSync(imagePath);
 
-                res.json({ url }); // Send the pre-signed URL to the frontend
+                res.json({ videoUrl, imageUrl }); // Send the pre-signed URL to the frontend
               } catch (err) {
                 fs.unlinkSync(videoPath);
                 fs.unlinkSync(videoPath2);
